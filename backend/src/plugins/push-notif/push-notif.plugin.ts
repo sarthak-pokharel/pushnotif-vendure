@@ -6,7 +6,6 @@ import { adminApiExtensions, shopApiExtensions } from './api/api-extensions';
 import { PushNotificationAdminResolver, PushNotificationShopResolver } from './api/push-notification.resolver';
 import { PUSH_NOTIF_PLUGIN_OPTIONS } from './constants';
 import { SubscribedDevices } from './entities/subscribed-devices.entity';
-import { CustomerAuthService } from './services/customer-auth.service';
 import { FirebaseService } from './services/firebase.service';
 import { PushNotificationService } from './services/push-notification.service';
 import { PluginInitOptions } from './types';
@@ -16,7 +15,6 @@ import { PluginInitOptions } from './types';
         { provide: PUSH_NOTIF_PLUGIN_OPTIONS, useFactory: () => PushNotifPlugin.options },
         FirebaseService,
         PushNotificationService,
-        CustomerAuthService,
     ],
     shopApiExtensions: {
         schema: shopApiExtensions,

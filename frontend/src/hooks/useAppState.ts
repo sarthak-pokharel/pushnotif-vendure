@@ -52,25 +52,31 @@ export const useAppState = () => {
   const handleRegister = async () => {
     try {
       const result = await shopClient.request(`
-        mutation RegisterCustomer($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
-          registerCustomer(email: $email, password: $password, firstName: $firstName, lastName: $lastName) {
-            success
-            message
-            customer {
-              id
-              firstName
-              lastName
-              emailAddress
+        mutation RegisterCustomerAccount($input: RegisterCustomerInput!) {
+          registerCustomerAccount(input: $input) {
+            ... on Success {
+              success
+            }
+            ... on ErrorResult {
+              errorCode
+              message
             }
           }
         }
-      `, registerForm);
+      `, { 
+        input: {
+          emailAddress: registerForm.email,
+          password: registerForm.password,
+          firstName: registerForm.firstName,
+          lastName: registerForm.lastName
+        }
+      });
 
-      if (result.data?.registerCustomer?.success) {
-        alert('Registration successful!');
+      if (result.data?.registerCustomerAccount?.success) {
+        alert('Registration successful! Please check your email to verify your account.');
         setRegisterForm({ email: '', password: '', firstName: '', lastName: '' });
       } else {
-        alert(result.data?.registerCustomer?.message || 'Registration failed');
+        alert(result.data?.registerCustomerAccount?.message || 'Registration failed');
       }
     } catch (error) {
       alert('Registration error');
@@ -81,27 +87,21 @@ export const useAppState = () => {
   const handleLogin = async () => {
     try {
       const result = await shopClient.request(`
-        mutation Authenticate($email: String!, $password: String!) {
-          authenticate(input: { native: { username: $email, password: $password } }) {
-            __typename
+        mutation Authenticate($username: String!, $password: String!) {
+          authenticate(input: { native: { username: $username, password: $password } }) {
             ... on CurrentUser {
               id
               identifier
-              channels {
-                code
-                token
-                permissions
-              }
             }
-            ... on InvalidCredentialsError {
+            ... on ErrorResult {
               errorCode
               message
             }
           }
         }
-      `, { email: loginForm.email, password: loginForm.password });
+      `, { username: loginForm.email, password: loginForm.password });
 
-      if (result.data?.authenticate?.__typename === 'CurrentUser') {
+      if (result.data?.authenticate?.id) {
         // Get customer profile after authentication
         const profileResult = await shopClient.request(`
           query GetActiveCustomer {

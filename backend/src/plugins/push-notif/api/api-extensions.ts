@@ -16,21 +16,13 @@ export const shopApiExtensions = gql`
         message: String!
     }
 
-    type CustomerRegistrationResponse {
-        success: Boolean!
-        message: String!
-        customer: Customer
-    }
-
     extend type Mutation {
         subscribeToPushNotifications(fcmToken: String!, deviceId: String, userAgent: String): PushNotificationResponse!
         unsubscribeFromPushNotifications(fcmToken: String!): PushNotificationResponse!
-        registerCustomer(email: String!, password: String!, firstName: String!, lastName: String!): CustomerRegistrationResponse!
     }
 
     extend type Query {
         myPushSubscriptions: [SubscribedDevice!]!
-        currentCustomerProfile: Customer
     }
 `;
 
@@ -82,8 +74,6 @@ export const adminApiExtensions = gql`
     extend type Query {
         pushSubscriptions: [SubscribedDevice!]!
         pushSubscription(id: ID!): SubscribedDevice
-        allCustomers: [Customer!]!
-        customerById(id: ID!): Customer
         customersWithTokens: [CustomerWithTokens!]!
     }
 

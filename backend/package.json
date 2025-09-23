@@ -9,7 +9,9 @@
     "build": "tsc",
     "start:server": "node ./dist/index.js",
     "start:worker": "node ./dist/index-worker.js",
-    "start": "concurrently npm:start:*"
+    "start": "concurrently npm:start:*",
+    "codegen": "graphql-codegen",
+    "codegen:watch": "graphql-codegen --watch"
   },
   "dependencies": {
     "@vendure/admin-ui-plugin": "3.4.2",
@@ -22,6 +24,10 @@
     "firebase-admin": "^13.5.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^6.0.0",
+    "@graphql-codegen/typescript": "^5.0.0",
+    "@graphql-codegen/typescript-operations": "^5.0.0",
+    "@graphql-codegen/typescript-resolvers": "^5.0.0",
     "@types/react": "19.1.13",
     "@vendure/cli": "3.4.2",
     "@vendure/ui-devkit": "3.4.2",
