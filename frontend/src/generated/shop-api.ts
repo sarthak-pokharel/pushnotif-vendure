@@ -801,6 +801,12 @@ export type CustomerListOptions = {
   take?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type CustomerRegistrationResponse = {
+  customer?: Maybe<Customer>;
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
 export type CustomerSortParameter = {
   createdAt?: InputMaybe<SortOrder>;
   emailAddress?: InputMaybe<SortOrder>;
@@ -1700,6 +1706,7 @@ export type Mutation = {
   logout: Success;
   /** Regenerate and send a verification token for a new Customer registration. Only applicable if `authOptions.requireVerification` is set to true. */
   refreshCustomerVerification: RefreshCustomerVerificationResult;
+  registerCustomer: CustomerRegistrationResponse;
   /**
    * Register a Customer account with the given credentials. There are three possible registration flows:
    *
@@ -1830,6 +1837,14 @@ export type MutationLoginArgs = {
 
 export type MutationRefreshCustomerVerificationArgs = {
   emailAddress: Scalars['String']['input'];
+};
+
+
+export type MutationRegisterCustomerArgs = {
+  email: Scalars['String']['input'];
+  firstName: Scalars['String']['input'];
+  lastName: Scalars['String']['input'];
+  password: Scalars['String']['input'];
 };
 
 
@@ -2870,6 +2885,7 @@ export type Query = {
   collection?: Maybe<Collection>;
   /** A list of Collections available to the shop */
   collections: CollectionList;
+  currentCustomerProfile?: Maybe<Customer>;
   /** Returns a list of payment methods and their eligibility based on the current active Order */
   eligiblePaymentMethods: Array<PaymentMethodQuote>;
   /** Returns a list of eligible shipping methods based on the current active Order */

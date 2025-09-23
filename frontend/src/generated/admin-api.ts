@@ -5018,6 +5018,7 @@ export type Query = {
   activeChannel: Channel;
   administrator?: Maybe<Administrator>;
   administrators: AdministratorList;
+  allCustomers: Array<Customer>;
   /** Get a single Asset by id */
   asset?: Maybe<Asset>;
   /** Get a list of Assets */
@@ -5031,6 +5032,7 @@ export type Query = {
   countries: CountryList;
   country?: Maybe<Country>;
   customer?: Maybe<Customer>;
+  customerById?: Maybe<Customer>;
   customerGroup?: Maybe<CustomerGroup>;
   customerGroups: CustomerGroupList;
   customers: CustomerList;
@@ -5161,6 +5163,11 @@ export type QueryCountryArgs = {
 
 
 export type QueryCustomerArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCustomerByIdArgs = {
   id: Scalars['ID']['input'];
 };
 
