@@ -66,8 +66,17 @@ export const adminApiExtensions = gql`
         data: JSON
     }
 
+    input UpdateSubscribedDeviceInput {
+        id: ID!
+        isActive: Boolean
+        deviceId: String
+        userAgent: String
+    }
+
     extend type Mutation {
         sendPushNotification(input: SendPushNotificationInput!): SendNotificationResult!
+        updateSubscribedDevice(input: UpdateSubscribedDeviceInput!): PushNotificationResponse!
+        deleteSubscribedDevice(id: ID!): PushNotificationResponse!
     }
 
     extend type Query {

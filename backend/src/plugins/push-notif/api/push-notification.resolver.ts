@@ -160,4 +160,45 @@ export class PushNotificationAdminResolver {
 
         return result;
     }
+
+    @Mutation()
+    @Transaction()
+    async updateSubscribedDevice(
+        @Ctx() ctx: RequestContext,
+        @Args() args: {
+            input: {
+                id: string;
+                isActive?: boolean;
+                deviceId?: string;
+                userAgent?: string;
+            }
+        }
+    ) {
+        try {
+            await this.pushNotificationService.updateSubscribedDevice(ctx, args.input.id, {
+                isActive: args.input.isActive,
+                deviceId: args.input.deviceId,
+                userAgent: args.input.userAgent
+            });
+            return { success: true, message: 'Device updated successfully' };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            return { success: false, message: errorMessage };
+        }
+    }
+
+    @Mutation()
+    @Transaction()
+    async deleteSubscribedDevice(
+        @Ctx() ctx: RequestContext,
+        @Args() args: { id: string }
+    ) {
+        try {
+            await this.pushNotificationService.deleteSubscribedDevice(ctx, args.id);
+            return { success: true, message: 'Device deleted successfully' };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            return { success: false, message: errorMessage };
+        }
+    }
 }

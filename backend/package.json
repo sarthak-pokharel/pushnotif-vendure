@@ -22,7 +22,9 @@
     "firebase-admin": "^13.5.0"
   },
   "devDependencies": {
+    "@types/react": "19.1.13",
     "@vendure/cli": "3.4.2",
+    "@vendure/ui-devkit": "3.4.2",
     "concurrently": "9.2.1",
     "typescript": "5.8.2"
   }

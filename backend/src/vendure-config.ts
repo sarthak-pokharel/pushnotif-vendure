@@ -1,3 +1,4 @@
+import { compileUiExtensions } from '@vendure/ui-devkit/compiler';
 import {
     dummyPaymentHandler,
     DefaultJobQueuePlugin,
@@ -12,7 +13,6 @@ import { GraphiqlPlugin } from '@vendure/graphiql-plugin';
 import 'dotenv/config';
 import path from 'path';
 import { PushNotifPlugin } from './plugins/push-notif/push-notif.plugin';
-
 const IS_DEV = process.env.APP_ENV === 'dev';
 const serverPort = +process.env.PORT || 3000;
 
@@ -89,6 +89,13 @@ export const config: VendureConfig = {
             adminUiConfig: {
                 apiPort: serverPort,
             },
+            app: compileUiExtensions({
+                outputPath: path.join(__dirname, '../admin-ui'),
+                extensions: [
+                    PushNotifPlugin.ui
+                ],
+                devMode: true,
+            }),
         }),
         PushNotifPlugin.init({}),
     ],

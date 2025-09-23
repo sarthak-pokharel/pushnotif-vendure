@@ -198,4 +198,40 @@ export class PushNotificationService {
                 relations: ['customer']
             });
     }
+
+    async updateSubscribedDevice(
+        ctx: RequestContext,
+        id: string,
+        updates: {
+            isActive?: boolean;
+            deviceId?: string;
+            userAgent?: string;
+        }
+    ): Promise<SubscribedDevices> {
+        const device = await this.connection
+            .getRepository(ctx, SubscribedDevices)
+            .findOne({ where: { id }, relations: ['customer'] });
+
+        if (!device) {
+            throw new Error('Subscribed device not found');
+        }
+
+        if (updates.isActive !== undefined) device.isActive = updates.isActive;
+        if (updates.deviceId !== undefined) device.deviceId = updates.deviceId;
+        if (updates.userAgent !== undefined) device.userAgent = updates.userAgent;
+
+        return this.connection.getRepository(ctx, SubscribedDevices).save(device);
+    }
+
+    async deleteSubscribedDevice(ctx: RequestContext, id: string): Promise<void> {
+        const result = await this.connection
+            .getRepository(ctx, SubscribedDevices)
+            .delete({ id });
+
+        if (result.affected === 0) {
+            throw new Error('Subscribed device not found');
+        }
+
+        Logger.info(`Device subscription deleted: ${id}`, loggerCtx);
+    }
 }

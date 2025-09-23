@@ -1,0 +1,190 @@
+<vdr-page-block>
+  <vdr-action-bar>
+    <vdr-ab-left>
+      <vdr-page-title [title]="'Push Notification Subscribers'" icon="bell"></vdr-page-title>
+    </vdr-ab-left>
+    <vdr-ab-right>
+      <button 
+        class="btn btn-primary" 
+        (click)="showSendNotificationForm()"
+        [disabled]="loading">
+        <clr-icon shape="envelope"></clr-icon>
+        Send Notification
+      </button>
+      <button 
+        class="btn btn-secondary ml-2" 
+        (click)="loadSubscriptions()"
+        [disabled]="loading">
+        <clr-icon shape="refresh"></clr-icon>
+        Refresh
+      </button>
+    </vdr-ab-right>
+  </vdr-action-bar>
+</vdr-page-block>
+
+<vdr-page-body>
+  <vdr-card *ngIf="loading">
+    <div class="loading-spinner">
+      <clr-spinner>Loading subscriptions...</clr-spinner>
+    </div>
+  </vdr-card>
+
+  <vdr-card *ngIf="!loading">
+    <!-- Simple HTML table for testing -->
+    <div *ngIf="subscriptions && subscriptions.length > 0">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>FCM Token</th>
+            <th>Device ID</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let subscription of subscriptions">
+            <td>
+              <div *ngIf="subscription.customer; else noCustomer">
+                {{ subscription.customer.firstName }} {{ subscription.customer.lastName }}<br>
+                <small>{{ subscription.customer.emailAddress }}</small>
+              </div>
+              <ng-template #noCustomer>Anonymous</ng-template>
+            </td>
+            <td>
+              <code>{{ truncateToken(subscription.fcmToken) }}</code>
+            </td>
+            <td>{{ subscription.deviceId || '-' }}</td>
+            <td>
+              <span [class]="subscription.isActive ? 'badge badge-success' : 'badge badge-warning'">
+                {{ subscription.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-secondary" (click)="editDevice(subscription)">Edit</button>
+              <button class="btn btn-sm btn-danger ml-1" (click)="deleteDevice(subscription)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="subscriptions.length === 0" class="empty-state">
+      <clr-icon shape="bell" size="64" class="text-muted"></clr-icon>
+      <h3>No subscribers found</h3>
+      <p>There are currently no devices subscribed to push notifications.</p>
+    </div>
+  </vdr-card>
+
+  <!-- Edit Modal -->
+  <vdr-modal *ngIf="editingDevice" 
+             [title]="'Edit Device Subscription'" 
+             (closeModal)="cancelEdit()">
+    <form class="edit-form">
+      <vdr-form-field label="Device ID" for="deviceId">
+        <input 
+          id="deviceId"
+          type="text" 
+          class="form-control"
+          [(ngModel)]="editingDevice.deviceId"
+          name="deviceId"
+          placeholder="Optional device identifier">
+      </vdr-form-field>
+
+      <vdr-form-field label="User Agent" for="userAgent">
+        <textarea 
+          id="userAgent"
+          class="form-control"
+          [(ngModel)]="editingDevice.userAgent"
+          name="userAgent"
+          rows="3"
+          placeholder="Optional user agent string"></textarea>
+      </vdr-form-field>
+
+      <vdr-form-field label="Status" for="isActive">
+        <vdr-toggle 
+          [(ngModel)]="editingDevice.isActive"
+          name="isActive">
+          {{ editingDevice.isActive ? 'Active' : 'Inactive' }}
+        </vdr-toggle>
+      </vdr-form-field>
+
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="cancelEdit()">
+          Cancel
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          (click)="saveEdit()">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </vdr-modal>
+
+  <!-- Send Notification Modal -->
+  <vdr-modal *ngIf="showNotificationForm" 
+             [title]="'Send Push Notification'" 
+             (closeModal)="cancelSendNotification()">
+    <form class="notification-form">
+      <vdr-form-field label="Title" for="notificationTitle" [required]="true">
+        <input 
+          id="notificationTitle"
+          type="text" 
+          class="form-control"
+          [(ngModel)]="notificationData.title"
+          name="notificationTitle"
+          placeholder="Notification title"
+          required>
+      </vdr-form-field>
+
+      <vdr-form-field label="Message" for="notificationBody" [required]="true">
+        <textarea 
+          id="notificationBody"
+          class="form-control"
+          [(ngModel)]="notificationData.body"
+          name="notificationBody"
+          rows="4"
+          placeholder="Notification message"
+          required></textarea>
+      </vdr-form-field>
+
+      <vdr-form-field label="Additional Data (JSON)" for="notificationData">
+        <textarea 
+          id="notificationData"
+          class="form-control"
+          [(ngModel)]="notificationData.dataJson"
+          name="notificationData"
+          rows="3"
+          placeholder='{"key": "value"}'></textarea>
+        <small class="form-text text-muted">Optional JSON data to include with the notification</small>
+      </vdr-form-field>
+
+      <div class="notification-target-info">
+        <strong>Target:</strong> All active subscribers ({{ getActiveSubscriberCount() }} devices)
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="cancelSendNotification()">
+          Cancel
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          (click)="sendNotification()"
+          [disabled]="!notificationData.title || !notificationData.body || sendingNotification">
+          <clr-icon *ngIf="sendingNotification" shape="spinner" class="spinner"></clr-icon>
+          {{ sendingNotification ? 'Sending...' : 'Send Notification' }}
+        </button>
+      </div>
+    </form>
+  </vdr-modal>
+
+</vdr-page-body>

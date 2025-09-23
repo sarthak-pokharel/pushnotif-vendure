@@ -1,14 +1,15 @@
 import { PluginCommonModule, Type, VendurePlugin } from '@vendure/core';
+import { AdminUiExtension } from '@vendure/ui-devkit/compiler';
+import * as path from 'path';
 
+import { adminApiExtensions, shopApiExtensions } from './api/api-extensions';
+import { PushNotificationAdminResolver, PushNotificationShopResolver } from './api/push-notification.resolver';
 import { PUSH_NOTIF_PLUGIN_OPTIONS } from './constants';
-import { PluginInitOptions } from './types';
 import { SubscribedDevices } from './entities/subscribed-devices.entity';
+import { CustomerAuthService } from './services/customer-auth.service';
 import { FirebaseService } from './services/firebase.service';
 import { PushNotificationService } from './services/push-notification.service';
-import { CustomerAuthService } from './services/customer-auth.service';
-import { PushNotificationShopResolver, PushNotificationAdminResolver } from './api/push-notification.resolver';
-import { shopApiExtensions, adminApiExtensions } from './api/api-extensions';
-
+import { PluginInitOptions } from './types';
 @VendurePlugin({
     imports: [PluginCommonModule],
     providers: [
@@ -35,4 +36,11 @@ export class PushNotifPlugin {
         this.options = options;
         return PushNotifPlugin;
     }
+
+    static ui: AdminUiExtension = {
+        id: 'push-notif-ui',
+        extensionPath: path.join(__dirname, 'ui'),
+        routes: [{ route: 'push-notif', filePath: 'routes.ts' }],
+        providers: ['providers.ts'],
+    };
 }
