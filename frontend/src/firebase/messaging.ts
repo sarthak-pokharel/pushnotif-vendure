@@ -33,8 +33,31 @@ export class FCMService {
     try {
       // Register service worker
       if ('serviceWorker' in navigator) {
-        await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        console.log('Service worker registered successfully');
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          scope: '/'
+        });
+        
+        // Wait for service worker to be ready
+        await navigator.serviceWorker.ready;
+        
+        console.log('Service worker registered successfully:', registration);
+        
+        // Update service worker if needed
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        // Listen for service worker updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('New service worker installed');
+              }
+            });
+          }
+        });
       }
     } catch (error) {
       console.error('Service worker registration failed:', error);
@@ -62,13 +85,29 @@ export class FCMService {
         return null;
       }
 
+      // Ensure service worker is ready before getting token
+      if ('serviceWorker' in navigator) {
+        await navigator.serviceWorker.ready;
+      }
+
       this.token = await getToken(messaging, { vapidKey });
       console.log('FCM token generated:', this.token);
+      
+      // Set up token refresh listener
+      this.setupTokenRefresh();
+      
       return this.token;
     } catch (error) {
       console.error('Error getting FCM token:', error);
       return null;
     }
+  }
+
+  private setupTokenRefresh(): void {
+    // Listen for token refresh
+    onMessage(messaging, (payload) => {
+      console.log('Token refresh or message received:', payload);
+    });
   }
 
   onMessage(callback: (payload: NotificationPayload) => void): void {

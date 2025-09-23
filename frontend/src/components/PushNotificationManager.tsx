@@ -79,9 +79,12 @@ export const PushNotificationManager: React.FC<PushNotificationManagerProps> = (
 
   const handleSubscribe = async () => {
     try {
+      // Ensure service worker is initialized first
+      await fcmService.initialize();
+      
       const token = await fcmService.getToken();
       if (!token) {
-        alert('Failed to get push notification token. Please check your permissions.');
+        alert('Failed to get push notification token. Please check your permissions and try again.');
         return;
       }
 

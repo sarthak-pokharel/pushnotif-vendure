@@ -26,10 +26,11 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body: notificationBody,
     icon: payload.notification?.icon || payload.data?.icon || '/firebase-logo.png',
-    badge: '/badge-icon.png',
+    badge: '/firebase-logo.png',
     data: {
       ...payload.data,
       url: payload.fcmOptions?.link || payload.data?.click_action || '/',
+      timestamp: Date.now(),
     },
     actions: [
       {
@@ -41,10 +42,11 @@ messaging.onBackgroundMessage((payload) => {
         title: 'Dismiss',
       },
     ],
-    requireInteraction: false, // Auto-dismiss after some time
+    requireInteraction: true, // Keep notification visible until user interacts
     silent: false,
-    vibrate: [200, 100, 200], // Vibration pattern
-    tag: 'notification-' + (payload.data?.timestamp || Date.now()), // Unique tag
+    vibrate: [200, 100, 200, 100, 200], // Vibration pattern
+    tag: 'push-notification', // Group notifications
+    renotify: true, // Show even if tag exists
   };
 
   console.log('Showing notification with options:', notificationOptions);
@@ -74,10 +76,59 @@ self.addEventListener('notificationclick', (event) => {
         }
         // Open new window if app is not already open
         if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
+          return clients.openWindow(self.location.origin + urlToOpen);
         }
       })
     );
   }
   // 'close' action or other actions will just close the notification
+});
+
+// Handle push events (fallback for when Firebase doesn't handle it)
+self.addEventListener('push', (event) => {
+  console.log('Push event received:', event);
+  
+  if (event.data) {
+    try {
+      const payload = event.data.json();
+      console.log('Push payload:', payload);
+      
+      const title = payload.notification?.title || payload.data?.title || 'New Notification';
+      const options = {
+        body: payload.notification?.body || payload.data?.body || 'You have a new message',
+        icon: payload.notification?.icon || payload.data?.icon || '/firebase-logo.png',
+        badge: '/firebase-logo.png',
+        tag: 'push-notification',
+        renotify: true,
+        requireInteraction: true,
+        data: payload.data || {},
+        actions: [
+          { action: 'open', title: 'Open' },
+          { action: 'close', title: 'Close' }
+        ]
+      };
+      
+      event.waitUntil(
+        self.registration.showNotification(title, options)
+      );
+    } catch (error) {
+      console.error('Error parsing push data:', error);
+      
+      // Fallback notification
+      event.waitUntil(
+        self.registration.showNotification('New Notification', {
+          body: 'You have a new message',
+          icon: '/firebase-logo.png',
+          tag: 'push-notification'
+        })
+      );
+    }
+  }
+});
+
+// Handle service worker updates
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
