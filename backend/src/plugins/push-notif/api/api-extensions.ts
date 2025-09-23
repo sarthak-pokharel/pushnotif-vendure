@@ -16,13 +16,6 @@ export const shopApiExtensions = gql`
         message: String!
     }
 
-    type CustomerAuthResponse {
-        success: Boolean!
-        message: String!
-        customer: Customer
-        token: String
-    }
-
     type CustomerRegistrationResponse {
         success: Boolean!
         message: String!
@@ -33,7 +26,6 @@ export const shopApiExtensions = gql`
         subscribeToPushNotifications(fcmToken: String!, deviceId: String, userAgent: String): PushNotificationResponse!
         unsubscribeFromPushNotifications(fcmToken: String!): PushNotificationResponse!
         registerCustomer(email: String!, password: String!, firstName: String!, lastName: String!): CustomerRegistrationResponse!
-        authenticateCustomer(email: String!, password: String!): CustomerAuthResponse!
     }
 
     extend type Query {

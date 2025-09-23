@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { RequestContext, TransactionalConnection, Logger, Customer, User, NativeAuthenticationStrategy } from '@vendure/core';
+import { RequestContext, TransactionalConnection, Logger, Customer, User } from '@vendure/core';
 import { loggerCtx } from '../constants';
 
 @Injectable()
 export class CustomerAuthService {
-    constructor(private connection: TransactionalConnection) {}
+    constructor(
+        private connection: TransactionalConnection
+    ) {}
 
     async registerCustomer(
         ctx: RequestContext,
@@ -44,31 +46,6 @@ export class CustomerAuthService {
 
         Logger.info(`New customer registered: ${email}`, loggerCtx);
         return savedCustomer;
-    }
-
-    async authenticateCustomer(ctx: RequestContext, email: string, password: string) {
-        const customer = await this.connection
-            .getRepository(ctx, Customer)
-            .findOne({
-                where: { emailAddress: email },
-                relations: ['user']
-            });
-
-        if (!customer || !customer.user) {
-            throw new Error('Invalid credentials');
-        }
-
-        // For demo purposes, we'll accept any password
-        // In production, you'd verify against a hashed password
-        Logger.info(`Customer authenticated: ${email}`, loggerCtx);
-
-        // Create a simple session token (in production, use JWT or similar)
-        const token = Buffer.from(`${customer.id}:${Date.now()}`).toString('base64');
-
-        return {
-            customer,
-            token
-        };
     }
 
     async getCurrentCustomer(ctx: RequestContext): Promise<Customer | null> {

@@ -72,24 +72,6 @@ export class PushNotificationShopResolver {
         }
     }
 
-    @Mutation()
-    async authenticateCustomer(
-        @Ctx() ctx: RequestContext,
-        @Args() args: { email: string; password: string }
-    ) {
-        try {
-            const result = await this.customerAuthService.authenticateCustomer(
-                ctx,
-                args.email,
-                args.password
-            );
-            return { success: true, message: 'Authentication successful', ...result };
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            return { success: false, message: errorMessage, customer: null, token: null };
-        }
-    }
-
     @Query()
     async currentCustomerProfile(@Ctx() ctx: RequestContext) {
         try {
